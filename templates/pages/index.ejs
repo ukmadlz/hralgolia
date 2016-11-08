@@ -1,0 +1,24 @@
+<!-- views/pages/index.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../partials/head %>
+</head>
+<body>
+
+    <header>
+        <% include ../partials/header %>
+    </header>
+
+    <main style="height: 100vh;">
+      <a href="/auth/google" class="btn" style="position: absolute; top: 50%; left: 40%">
+        <i class="fa fa-google" aria-hidden="true"></i>
+        Sign in with Google
+      </a>
+    </main>
+
+    <% include ../partials/footer %>
+
+</body>
+</html>

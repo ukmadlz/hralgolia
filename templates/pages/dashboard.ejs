@@ -1,0 +1,66 @@
+<!-- views/pages/index.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ../partials/head %>
+</head>
+<body>
+
+    <header>
+        <% include ../partials/header %>
+    </header>
+
+    <main style="height: 100vh;">
+      <form>
+        <div class="input-field">
+          <input id="search" type="search" required>
+          <label for="search"><i class="material-icons">search</i></label>
+          <i class="material-icons">close</i>
+        </div>
+      </form>
+      <ul id="result" class="collection">
+      </ul>
+    </main>
+
+    <% include ../partials/footer %>
+
+    <script type="text/javascript" >
+      $(document).ready(function(){
+        $('nav ul').prepend('<li><a id="sync"><i class="fa fa-spin fa-refresh" aria-hidden="true"></i> Sync</a></li>')
+        $('.sync').on('click', function(e) {
+          e.preventDefault();
+          $.ajax('/sync');
+        });
+        var client = algoliasearch('<%= appId %>', '<%= apiKey %>');
+        var index = client.initIndex('<%= indexId %>');
+        $('#search').on('keypress', function() {
+          $('#result').html('');
+          index.search($('#search').val(), function searchDone(err, content) {
+            content.hits.forEach(function(contact) {
+              console.log(contact);
+              var emailArray = [];
+              var tel = [];
+              contact.email.forEach(function(email) {
+                emailArray.push(`<a href="mail:${email}" >${email}</a>`)
+              });
+              contact.phone.forEach(function(phone) {
+                tel.push(`<a href="${phone}" >${phone}</a>`)
+              });
+              $('#result').append(`<li class="collection-item avatar">
+                <img src="${contact.image}" alt="" class="circle">
+                <span class="title">${contact.name}</span>
+                <p>
+                  ${emailArray.join(', ')} <br>
+                   ${tel.join(', ')}
+                </p>
+                <a href="#!" class="secondary-content"><i class="material-icons">grade</i></a>
+              </li>`)
+            });
+          });
+        })
+      });
+    </script>
+
+</body>
+</html>
