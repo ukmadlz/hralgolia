@@ -11,14 +11,19 @@
         <% include ../partials/header %>
     </header>
 
-    <main style="height: 100vh;">
-      <form>
-        <div class="input-field">
-          <input id="search" type="search" required>
-          <label for="search"><i class="material-icons">search</i></label>
-          <i class="material-icons">close</i>
-        </div>
-      </form>
+    <main class="container">
+      <div class="row">
+        <form class="col s12">
+          <div class="row">
+            <div class="input-field">
+              <i class="material-icons prefix">search</i>
+              <input id="search" type="search" required>
+              <label for="search"></label>
+              <i class="material-icons">close</i>
+            </div>
+          </div>
+        </form>
+      </div>
       <ul id="result" class="collection">
       </ul>
     </main>
@@ -27,38 +32,45 @@
 
     <script type="text/javascript" >
       $(document).ready(function(){
-        $('nav ul').prepend('<li><a class="sync"><i class="fa fa-spin fa-refresh" aria-hidden="true"></i> Sync</a></li>')
-        $('.sync').on('click', function(e) {
-          e.preventDefault();
+        function goSync() {
           $.get('/sync', function() {
             $('.sync').css('color', 'green');
           });
+        }
+        $('nav ul').prepend('<li><a class="sync"><i class="fa fa-spin fa-refresh" aria-hidden="true"></i> Sync</a></li>')
+        $('.sync').on('click', function(e) {
+          e.preventDefault();
+          goSync();
         });
         var client = algoliasearch('<%= appId %>', '<%= apiKey %>');
-        var index = client.initIndex('<%= indexId %>');
         $('#search').on('keypress', function() {
+          var index = client.initIndex('<%= indexId %>');
           $('#result').html('');
           index.search($('#search').val(), function searchDone(err, content) {
-            content.hits.forEach(function(contact) {
-              console.log(contact);
-              var emailArray = [];
-              var tel = [];
-              contact.email.forEach(function(email) {
-                emailArray.push(`<a href="mail:${email}" >${email}</a>`)
+            if (err) {
+              console.log(err);
+              goSync();
+            } else {
+              content.hits.forEach(function(contact) {
+                var emailArray = [];
+                var tel = [];
+                contact.email.forEach(function(email) {
+                  emailArray.push(`<a href="mail:${email}" >${email}</a>`)
+                });
+                contact.phone.forEach(function(phone) {
+                  tel.push(`<a href="${phone}" >${phone}</a>`)
+                });
+                $('#result').append(`<li class="collection-item avatar">
+                  <img src="${contact.image}" alt="" class="circle">
+                  <span class="title">${contact.name}</span>
+                  <p>
+                    ${emailArray.join(', ')} <br>
+                     ${tel.join(', ')}
+                  </p>
+                  <a href="#!" class="secondary-content"><i class="material-icons">grade</i></a>
+                </li>`)
               });
-              contact.phone.forEach(function(phone) {
-                tel.push(`<a href="${phone}" >${phone}</a>`)
-              });
-              $('#result').append(`<li class="collection-item avatar">
-                <img src="${contact.image}" alt="" class="circle">
-                <span class="title">${contact.name}</span>
-                <p>
-                  ${emailArray.join(', ')} <br>
-                   ${tel.join(', ')}
-                </p>
-                <a href="#!" class="secondary-content"><i class="material-icons">grade</i></a>
-              </li>`)
-            });
+            }
           });
         })
       });

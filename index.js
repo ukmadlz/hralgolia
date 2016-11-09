@@ -110,6 +110,15 @@ function(err) {
           token: request.auth.credentials.token,
         });
 
+        buildAndSaveContacts({
+          auth: {
+            credentials: {
+              id: profile.id,
+              token: request.auth.credentials.token,
+            }
+          }
+        });
+
         return reply.redirect('/dashboard');
       }
     }
@@ -123,8 +132,7 @@ function(err) {
 
         //Return a message using the information from the session
         return reply.view('pages/index', {
-            title: 'examples/views/ejs/index.js | Hapi ' + request.server.version,
-            message: 'Index - Hello World!'
+            title: 'HRAlgolia',
         });
       }
     }
@@ -139,7 +147,7 @@ function(err) {
 
         //Return a message using the information from the session
         return reply.view('pages/dashboard', {
-            title: 'examples/views/ejs/index.js | Hapi ' + request.server.version,
+            title: 'HRAlgolia',
             appId: process.env.ALGOLIAAPPID,
             apiKey: process.env.ALGOLIAAPIKEY,
             indexId: request.auth.credentials.id,
@@ -154,66 +162,7 @@ function(err) {
     config: {
       auth: 'session', //<-- require a session for this
       handler: function(request, reply) {
-
-        var c = new GoogleContacts({
-          token: request.auth.credentials.token,
-          thin:false,
-        });
-
-        const client = Algolia(process.env.ALGOLIAAPPID, process.env.ALGOLIAADMINKEY);
-        const index = client.initIndex(request.auth.credentials.id)
-
-        c.getContacts(function(err, data){
-          if (err) {
-            console.log(err);
-            reply({ syncStatus: 'Failed', message: err });
-          } else {
-            var contactList = [];
-            _.forEach(data, function(contact) {
-                var urlIdArray = Url.parse(contact.id['$t']).path.split('/');
-                var contactObject = {
-                  objectID: urlIdArray[urlIdArray.length-1],
-                  name: contact.title['$t'],
-                  email: [],
-                  phone: []
-                }
-
-                if(typeof contact['gd$organization'] != 'undefined') {
-                  contactObject.company = contact['gd$organization'][0]['gd$orgName']['$t'];
-                  if(typeof contact['gd$organization'][0]['gd$orgTitle'] != 'undefined') {
-                    contactObject.title = contact['gd$organization'][0]['gd$orgTitle']['$t'];
-                  }
-                }
-                _.forEach(contact['gd$email'], function(email) {
-                  contactObject.email.push(email.address);
-                  if (email.primary){
-                    contactObject.image = Gravatar.url(email.address);
-                  }
-                });
-                _.forEach(contact['gd$phoneNumber'], function(phone) {
-                  contactObject.phone.push(phone.uri);
-                });
-                contactList.push(contactObject);
-                index.getObject(contactObject.objectID, function(err, content) {
-                  if (err) {
-                    index.addObject(contactObject, contactObject.objectID, function(err, content) {
-                      console.log('Add objectID=' + content.objectID);
-                    });
-                  } else {
-                    index.saveObject(contactObject, function(err, content) {
-                      console.log('Save objectID=' + content.objectID);
-                    });
-                  }
-                });
-            });
-            reply(contactList);
-          }
-            //Return a message using the information from the session
-        }, {
-          thin: false,
-          projection: 'full',
-          'max-results': 10000,
-        });
+        buildAndSaveContacts(request, reply);
       }
     }
   });
@@ -228,3 +177,76 @@ function(err) {
     console.log('Server running at:', server.info.uri);
   });
 });
+
+function buildAndSaveContacts(request, reply) {
+  var c = new GoogleContacts({
+    token: request.auth.credentials.token,
+    thin:false,
+  });
+
+  const client = Algolia(process.env.ALGOLIAAPPID, process.env.ALGOLIAADMINKEY);
+  const index = client.initIndex(request.auth.credentials.id);
+  index.setSettings({
+    'searchableAttributes': [
+      'name',
+      'email',
+      'phone',
+    ]
+  }, function(err, content) {
+    console.log(content);
+  });
+
+  c.getContacts(function(err, data){
+    if (err) {
+      console.log(err);
+      reply({ syncStatus: 'Failed', message: err });
+    } else {
+      var contactList = [];
+      _.forEach(data, function(contact) {
+          var urlIdArray = Url.parse(contact.id['$t']).path.split('/');
+          var contactObject = {
+            objectID: urlIdArray[urlIdArray.length-1],
+            name: contact.title['$t'],
+            email: [],
+            phone: []
+          }
+
+          if(typeof contact['gd$organization'] != 'undefined') {
+            contactObject.company = contact['gd$organization'][0]['gd$orgName']['$t'];
+            if(typeof contact['gd$organization'][0]['gd$orgTitle'] != 'undefined') {
+              contactObject.title = contact['gd$organization'][0]['gd$orgTitle']['$t'];
+            }
+          }
+          _.forEach(contact['gd$email'], function(email) {
+            contactObject.email.push(email.address);
+            if (email.primary){
+              contactObject.image = Gravatar.url(email.address);
+            }
+          });
+          _.forEach(contact['gd$phoneNumber'], function(phone) {
+            contactObject.phone.push(phone.uri);
+          });
+          contactList.push(contactObject);
+          index.getObject(contactObject.objectID, function(err, content) {
+            if (err) {
+              index.addObject(contactObject, contactObject.objectID, function(err, content) {
+                console.log('Add objectID=' + content.objectID);
+              });
+            } else {
+              index.saveObject(contactObject, function(err, content) {
+                console.log('Save objectID=' + content.objectID);
+              });
+            }
+          });
+      });
+      if (typeof reply != 'undefined'){
+        reply(contactList);
+      }
+    }
+      //Return a message using the information from the session
+  }, {
+    thin: false,
+    projection: 'full',
+    'max-results': 10000,
+  });
+}
