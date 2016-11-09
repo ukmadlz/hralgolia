@@ -27,10 +27,12 @@
 
     <script type="text/javascript" >
       $(document).ready(function(){
-        $('nav ul').prepend('<li><a id="sync"><i class="fa fa-spin fa-refresh" aria-hidden="true"></i> Sync</a></li>')
+        $('nav ul').prepend('<li><a class="sync"><i class="fa fa-spin fa-refresh" aria-hidden="true"></i> Sync</a></li>')
         $('.sync').on('click', function(e) {
           e.preventDefault();
-          $.ajax('/sync');
+          $.get('/sync', function() {
+            $('.sync').css('color', 'green');
+          });
         });
         var client = algoliasearch('<%= appId %>', '<%= apiKey %>');
         var index = client.initIndex('<%= indexId %>');
