@@ -4,6 +4,12 @@
 <html lang="en">
 <head>
     <% include ../partials/head %>
+    <style>
+      .collection .collection-item.avatar em {
+        font-weight: bolder;
+        font-style: normal;
+      }
+    </style>
 </head>
 <body>
 
@@ -43,31 +49,32 @@
           goSync();
         });
         var client = algoliasearch('<%= appId %>', '<%= apiKey %>');
-        $('#search').on('keypress', function() {
+        $('#search').on('keyup', function() {
           var index = client.initIndex('<%= indexId %>');
-          $('#result').html('');
           index.search($('#search').val(), function searchDone(err, content) {
             if (err) {
               console.log(err);
               goSync();
             } else {
+              $('#result').html('');
               content.hits.forEach(function(contact) {
+                var name = contact._highlightResult.name.value;
                 var emailArray = [];
                 var tel = [];
-                contact.email.forEach(function(email) {
-                  emailArray.push(`<a href="mail:${email}" >${email}</a>`)
+                contact.email.forEach(function(email, key) {
+                  console.log(email, key);
+                  emailArray.push(`<a href="mail:${email}" >${contact._highlightResult.email[key].value}</a>`)
                 });
-                contact.phone.forEach(function(phone) {
-                  tel.push(`<a href="${phone}" >${phone}</a>`)
+                contact.phone.forEach(function(phone, key) {
+                  tel.push(`<a href="${phone}" >${contact._highlightResult.phone[key].value}</a>`)
                 });
                 $('#result').append(`<li class="collection-item avatar">
                   <img src="${contact.image}" alt="" class="circle">
-                  <span class="title">${contact.name}</span>
+                  <span class="title">${name}</span>
                   <p>
                     ${emailArray.join(', ')} <br>
                      ${tel.join(', ')}
                   </p>
-                  <a href="#!" class="secondary-content"><i class="material-icons">grade</i></a>
                 </li>`)
               });
             }
