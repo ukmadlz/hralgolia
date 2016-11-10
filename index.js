@@ -203,6 +203,9 @@ function buildAndSaveContacts(request, reply) {
     } else {
       var contactList = [];
       _.forEach(data, function(contact) {
+          if(contact.title['$t']=='Katy Elsmore') {
+            console.log(contact);
+          }
           var urlIdArray = Url.parse(contact.id['$t']).path.split('/');
           var contactObject = {
             objectID: urlIdArray[urlIdArray.length-1],
@@ -230,11 +233,11 @@ function buildAndSaveContacts(request, reply) {
           index.getObject(contactObject.objectID, function(err, content) {
             if (err) {
               index.addObject(contactObject, contactObject.objectID, function(err, content) {
-                console.log('Add objectID=' + content.objectID);
+                // console.log('Add objectID=' + content.objectID);
               });
             } else {
               index.saveObject(contactObject, function(err, content) {
-                console.log('Save objectID=' + content.objectID);
+                // console.log('Save objectID=' + content.objectID);
               });
             }
           });
