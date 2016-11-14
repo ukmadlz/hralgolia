@@ -187,7 +187,7 @@ function buildAndSaveContacts(request, reply) {
   const client = Algolia(process.env.ALGOLIAAPPID, process.env.ALGOLIAADMINKEY);
   const index = client.initIndex(request.auth.credentials.id);
   index.setSettings({
-    'searchableAttributes': [
+    'attributesToIndex': [
       'name',
       'email',
       'phone',
