@@ -203,15 +203,13 @@ function buildAndSaveContacts(request, reply) {
     } else {
       var contactList = [];
       _.forEach(data, function(contact) {
-          if(contact.title['$t']=='Katy Elsmore') {
-            console.log(contact);
-          }
           var urlIdArray = Url.parse(contact.id['$t']).path.split('/');
           var contactObject = {
             objectID: urlIdArray[urlIdArray.length-1],
             name: contact.title['$t'],
             email: [],
-            phone: []
+            phone: [],
+            rank: 0,
           }
 
           if(typeof contact['gd$organization'] != 'undefined') {
@@ -228,6 +226,14 @@ function buildAndSaveContacts(request, reply) {
           });
           _.forEach(contact['gd$phoneNumber'], function(phone) {
             contactObject.phone.push(phone.uri);
+          });
+          // custom rank piece
+          _.forEach(contactObject, function(value, key) {
+            if(key != 'rank'){
+              if(value.length) {
+                contactObject.rank++;
+              }
+            }
           });
           contactList.push(contactObject);
           index.getObject(contactObject.objectID, function(err, content) {
