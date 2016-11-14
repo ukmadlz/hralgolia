@@ -193,7 +193,7 @@ function buildAndSaveContacts(request, reply) {
       'phone',
     ]
   }, function(err, content) {
-    console.log(content);
+    console.log(err, content);
   });
 
   c.getContacts(function(err, data){
