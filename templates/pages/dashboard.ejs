@@ -35,53 +35,12 @@
     </main>
 
     <% include ../partials/footer %>
-
     <script type="text/javascript" >
-      $(document).ready(function(){
-        function goSync() {
-          $.get('/sync', function() {
-            $('.sync').css('color', 'green');
-          });
-        }
-        $('nav ul').prepend('<li><a class="sync"><i class="fa fa-spin fa-refresh" aria-hidden="true"></i> Sync</a></li>')
-        $('.sync').on('click', function(e) {
-          e.preventDefault();
-          goSync();
-        });
-        var client = algoliasearch('<%= appId %>', '<%= apiKey %>');
-        $('#search').on('keyup', function() {
-          var index = client.initIndex('<%= indexId %>');
-          index.search($('#search').val(), function searchDone(err, content) {
-            if (err) {
-              console.log(err);
-              goSync();
-            } else {
-              $('#result').html('');
-              content.hits.forEach(function(contact) {
-                var name = contact._highlightResult.name.value;
-                var emailArray = [];
-                var tel = [];
-                contact.email.forEach(function(email, key) {
-                  console.log(email, key);
-                  emailArray.push(`<a href="mail:${email}" >${contact._highlightResult.email[key].value}</a>`)
-                });
-                contact.phone.forEach(function(phone, key) {
-                  tel.push(`<a href="${phone}" >${contact._highlightResult.phone[key].value}</a>`)
-                });
-                $('#result').append(`<li class="collection-item avatar">
-                  <img src="${contact.image}" alt="" class="circle">
-                  <span class="title">${name}</span>
-                  <p>
-                    ${emailArray.join(', ')} <br>
-                     ${tel.join(', ')}
-                  </p>
-                </li>`)
-              });
-            }
-          });
-        })
-      });
+    var appId = '<%= appId %>';
+    var apiKey = '<%= apiKey %>';
+    var indexId = '<%= indexId %>';
     </script>
+    <script type="text/javascript" src="/app.js" ></script>
 
 </body>
 </html>

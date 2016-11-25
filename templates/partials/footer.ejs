@@ -21,10 +21,25 @@
   </div>
 </footer>
 <!-- Compiled and minified JavaScript -->
-<script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="https://use.fontawesome.com/61086dca98.js"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/pouchdb/6.0.7/pouchdb.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.min.js"></script>
 <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
 <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
 <script type="text/javascript" >
   $(".button-collapse").sideNav();
+</script>
+<script type="text/javascript" >
+if(navigator.serviceWorker) {
+  navigator.serviceWorker.register('/sw.js')
+  .then(function(){
+    console.log('Loaded Service Worker');
+  })
+  .catch(function(err){
+    console.log('Failed to load Service Worker', err);
+  })
+} else {
+  console.log("This browser doesn't support Service Workers");
+}
 </script>

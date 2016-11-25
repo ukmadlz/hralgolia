@@ -45,8 +45,10 @@ const options = {
 server.register([
   require('hapi-auth-cookie'),
   require('hapi-context-credentials'),
+  require('hapi-require-https'),
   require('bell'),
   require('vision'),
+  require('inert'),
   {
     register: require('good'),
     options
@@ -85,6 +87,16 @@ function(err) {
       'email',
       'https://www.googleapis.com/auth/contacts.readonly'
     ]
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/{param*}',
+    handler: {
+        directory: {
+            path: 'public'
+        }
+    }
   });
 
   //Setup the routes (this could be done in an own file but for the sake of simplicity isn't)
