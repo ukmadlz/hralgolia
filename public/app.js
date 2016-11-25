@@ -9,8 +9,35 @@ $(document).ready(function(){
     e.preventDefault();
     goSync();
   });
+  $('#close').on('click', function(e) {
+    $('#search').val('');
+    $('#result').html('');
+  });
   var db = new PouchDB('searches');
   var client = algoliasearch(appId, apiKey);
+  function renderResults (result) {
+    $('#result').html('');
+    result.hits.forEach(function(contact) {
+      var name = contact._highlightResult.name.value;
+      var emailArray = [];
+      var tel = [];
+      contact.email.forEach(function(email, key) {
+        console.log(email, key);
+        emailArray.push(`<a href="mail:${email}" >${contact._highlightResult.email[key].value}</a>`)
+      });
+      contact.phone.forEach(function(phone, key) {
+        tel.push(`<a href="${phone}" >${contact._highlightResult.phone[key].value}</a>`)
+      });
+      $('#result').append(`<li class="collection-item avatar">
+        <img src="${contact.image}" alt="" class="circle">
+        <span class="title">${name}</span>
+        <p>
+          ${emailArray.join(', ')} <br>
+           ${tel.join(', ')}
+        </p>
+      </li>`);
+    });
+  }
   function searchAlgolia (searchTerm){
     var index = client.initIndex(indexId);
     index.search(searchTerm, function searchDone(err, content) {
@@ -18,27 +45,7 @@ $(document).ready(function(){
         console.log(err);
         goSync();
       } else {
-        $('#result').html('');
-        content.hits.forEach(function(contact) {
-          var name = contact._highlightResult.name.value;
-          var emailArray = [];
-          var tel = [];
-          contact.email.forEach(function(email, key) {
-            console.log(email, key);
-            emailArray.push(`<a href="mail:${email}" >${contact._highlightResult.email[key].value}</a>`)
-          });
-          contact.phone.forEach(function(phone, key) {
-            tel.push(`<a href="${phone}" >${contact._highlightResult.phone[key].value}</a>`)
-          });
-          $('#result').append(`<li class="collection-item avatar">
-            <img src="${contact.image}" alt="" class="circle">
-            <span class="title">${name}</span>
-            <p>
-              ${emailArray.join(', ')} <br>
-               ${tel.join(', ')}
-            </p>
-          </li>`);
-        });
+        renderResults(content);
         var returnedHits = {
           _id: searchTerm,
           hits: content.hits
@@ -57,33 +64,13 @@ $(document).ready(function(){
     });
   }
   $('#search').on('keyup', function() {
-    var searchTerm = $('#search').val();;
+    var searchTerm = $('#search').val();
     if ('onLine' in navigator) {
       if (navigator.onLine) {
         searchAlgolia(searchTerm);
       } else {
         db.get(searchTerm, function(err, result) {
-          $('#result').html('');
-          result.hits.forEach(function(contact) {
-            var name = contact._highlightResult.name.value;
-            var emailArray = [];
-            var tel = [];
-            contact.email.forEach(function(email, key) {
-              console.log(email, key);
-              emailArray.push(`<a href="mail:${email}" >${contact._highlightResult.email[key].value}</a>`)
-            });
-            contact.phone.forEach(function(phone, key) {
-              tel.push(`<a href="${phone}" >${contact._highlightResult.phone[key].value}</a>`)
-            });
-            $('#result').append(`<li class="collection-item avatar">
-              <img src="${contact.image}" alt="" class="circle">
-              <span class="title">${name}</span>
-              <p>
-                ${emailArray.join(', ')} <br>
-                 ${tel.join(', ')}
-              </p>
-            </li>`);
-          });
+          renderResults (result)
         });
       }
     } else {
