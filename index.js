@@ -19,7 +19,7 @@ const appEnv = Cfenv.getAppEnv();
 // Create a server with a host and port
 const server = new Hapi.Server();
 server.connection({
-  port: appEnv.port,
+  port: process.env.PORT || appEnv.port,
   host: appEnv.bind
 });
 
