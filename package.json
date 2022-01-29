@@ -30,7 +30,7 @@
     "good-squeeze": "^5.0.0",
     "google-contacts": "^0.1.2",
     "gravatar": "^1.5.2",
-    "hapi": "^15.2.0",
+    "hapi": "^18.1.0",
     "hapi-auth-cookie": "^6.1.1",
     "hapi-context-credentials": "^2.0.0",
     "hapi-require-https": "^2.0.9",
