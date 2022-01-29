@@ -17,7 +17,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "algoliasearch": "^3.19.0",
+    "algoliasearch": "^4.12.1",
     "bell": "^8.3.0",
     "boom": "^4.2.0",
     "cfenv": "^1.0.3",
